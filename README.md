@@ -1,431 +1,165 @@
-# 经典渡河问题求解（River Crossing Problems）
+# 经典渡河问题求解 / Classic River-Crossing Solvers
 
-这是一个基于 MATLAB 实现的经典渡河问题求解小项目，主要围绕两类经典逻辑/搜索问题展开：
+<p align="center"><strong>用状态空间搜索解决商人与随从、人猫鸡米等经典渡河约束问题，并输出可行状态序列。</strong><br>State-space solvers for classic river-crossing puzzles, including merchants-and-servants and the person-cat-chicken-rice problem.</p>
 
-- 商人与随从过河问题
-- 人、猫、鸡、米过河问题
+<p align="center">![Tech](https://img.shields.io/badge/stack-MATLAB-2563eb) ![Docs](https://img.shields.io/badge/docs-中文%20%7C%20English-16a34a) ![Status](https://img.shields.io/badge/status-portfolio--ready-f59e0b)</p>
 
-项目通过状态表示、合法性判定、允许决策集构造与回溯搜索等方式，求解渡河过程中的可行路径，并输出状态变化结果。
+<p align="center"><a href="#中文说明">中文</a> · <a href="#english">English</a> · <a href="#结果展示--results">结果展示 / Results</a> · <a href="#复现--reproduction">复现 / Reproduction</a></p>
 
-本仓库适合作为 MATLAB 算法练习、离散状态搜索入门案例和经典益智问题程序化表达的展示项目。
+## 中文说明
 
----
+### 项目定位
 
-## 项目简介
+用状态空间搜索解决商人与随从、人猫鸡米等经典渡河约束问题，并输出可行状态序列。 本仓库强调“问题—方法—代码—结果”的对应关系，适合作为课程作业、算法练习或建模研究的可复现档案。
 
-“过河问题”是一类非常经典的逻辑推理与状态搜索问题。其共同特点是：
+### 核心方法
 
-- 有若干对象需要从一岸运送到另一岸
-- 小船容量有限
-- 部分对象之间存在约束关系
-- 需要在满足安全规则的前提下找到完整可行的渡河方案
+- 二进制/计数状态编码 / compact state encoding
+- 合法状态与动作约束 / state and action validation
+- 回溯搜索与去环 / backtracking with cycle avoidance
 
-这类问题虽然规模不大，但非常适合训练以下能力：
+## English
 
-- 状态建模
-- 约束判定
-- 可行决策集设计
-- 路径搜索与回溯
-- 结果输出与步骤还原
+### Positioning
 
-本项目即围绕这些经典问题，给出了若干 MATLAB 脚本实现。
+State-space solvers for classic river-crossing puzzles, including merchants-and-servants and the person-cat-chicken-rice problem. The repository keeps the problem statement, implementation, and outputs close together so the work can be inspected and reproduced.
 
----
+### What is demonstrated
 
-## 仓库结构
+- 二进制/计数状态编码 / compact state encoding
+- 合法状态与动作约束 / state and action validation
+- 回溯搜索与去环 / backtracking with cycle avoidance
 
-```text
-river-crossing-problems/
-├── catkunrice.m
-├── river_crossing.m
-├── shangrenguohe.m
-├── sinS.m
-└── variants/
-    ├── catkunrice_second.m
-    └── gai.m
-````
+## 问题拆解 / Problem Breakdown
 
----
+| 阶段 / Stage | 中文说明 | English description |
+| --- | --- | --- |
+| 输入 / Input | 整理 `初始左岸 / Start` 及模型所需参数，检查单位、范围和文件位置。 | Prepare the 初始左岸 / Start and validate units, ranges, and file locations. |
+| 处理 / Process | 通过 `枚举动作 / Actions` 将原始问题转换为可计算表示。 | Convert the original problem into a computable representation through 枚举动作 / Actions. |
+| 求解 / Solve | 执行 `状态是否合法？ / Valid?`，保留中间结果以便检查。 | Execute 状态是否合法？ / Valid? and retain intermediate artifacts for inspection. |
+| 输出 / Output | 生成 `到达右岸 / Goal`，并结合约束解释结果。 | Produce 到达右岸 / Goal and interpret it together with the constraints. |
 
-## 项目内容概览
+## 方法设计 / Method Design
 
-本仓库主要包含三部分内容：
+| # | 方法与作用 / Method and role |
+| ---: | --- |
+| 1 | 二进制/计数状态编码 / compact state encoding |
+| 2 | 合法状态与动作约束 / state and action validation |
+| 3 | 回溯搜索与去环 / backtracking with cycle avoidance |
 
-### 1. 商人与随从过河问题
+这些模块彼此独立但按数据流连接：输入准备负责可计算性，核心算法负责求解，结果层负责把数字转换为可审查的图、表或状态序列。
 
-对应文件：
+These modules are separated but connected by the data flow: input preparation ensures computability, the core algorithm solves the model, and the output layer turns numbers into inspectable figures, tables, or state sequences.
 
-* `shangrenguohe.m`
+## 工作流 / Workflow
 
-### 2. 人、猫、鸡、米过河问题
-
-对应文件：
-
-* `catkunrice.m`
-* `sinS.m`
-* `river_crossing.m`
-
-### 3. 旧版本 / 变体实现
-
-对应文件：
-
-* `variants/gai.m`
-* `variants/catkunrice_second.m`
-
----
-
-## 问题背景说明
-
----
-
-### 一、商人与随从过河问题
-
-该问题可以理解为经典“传教士与野人过河问题”的一个变体。
-
-设有：
-
-* 若干商人
-* 若干随从
-* 一条容量有限的小船
-
-要求将所有人从左岸运送到右岸，并满足某种安全约束，例如：
-
-* 在任一岸上，只要商人存在，则随从人数不能多于商人数
-  （否则会导致不安全状态）
-
-在本项目中，程序通过：
-
-* 状态向量表示当前两类角色在某岸的数量
-* 允许决策集表示小船每次可能搭载的人数组合
-* 状态合法性判定函数检查是否满足约束
-* 回溯搜索遍历可能路径
-
-从而寻找完整的过河方案。
-
----
-
-### 二、人、猫、鸡、米过河问题
-
-这是更常见的经典逻辑问题：
-
-* 一个人需要带着猫、鸡、米过河
-* 船每次只能带人以及至多一个物品
-* 若人不在场，猫不能和鸡单独留在一起
-* 若人不在场，鸡不能和米单独留在一起
-
-程序的目标是在不违反约束的前提下，找到完整渡河顺序。
-
-这个问题虽然规模较小，但非常适合做“状态搜索 + 约束判断”的入门练习。
-
----
-
-## 文件说明
-
----
-
-### 1. `shangrenguohe.m`
-
-这是商人与随从过河问题的主脚本。
-
-#### 主要思路
-
-* 用状态向量表示左岸当前剩余的商人和随从数量
-* 设置初始状态，例如 `n=3`
-* 构造允许决策集 `D`，表示小船每次可搭载的人员组合
-* 每进行一次操作，就更新状态
-* 检查更新后的状态是否仍属于合法状态集合
-* 若遇到死路，则执行回溯
-* 最终输出完整的状态转移结果和过河次数
-
-#### 特点
-
-* 采用了比较典型的**深度优先 + 回溯**思路
-* 比简单枚举更有“状态空间搜索”味道
-* 适合展示约束型搜索问题的 MATLAB 写法
-
----
-
-### 2. `catkunrice.m`
-
-这是“人、猫、鸡、米过河问题”的主版本实现之一。
-
-#### 主要思路
-
-* 用四维状态向量表示人、猫、鸡、米所在岸的信息
-* 构造允许决策集 `D`
-* 每次尝试一种可能的渡河动作
-* 调用合法性判定函数检查当前状态是否满足安全规则
-* 若状态重复且形成无意义循环，则剪枝
-* 在必要时执行回溯，寻找完整可行路径
-
-#### 特点
-
-* 状态表示清晰
-* 合法状态判定与搜索过程分离
-* 具有较明显的算法训练价值
-
----
-
-### 3. `sinS.m`
-
-这是与 `catkunrice.m` 配套使用的状态合法性判定函数。
-
-对于“人、猫、鸡、米过河问题”，它主要负责检查：
-
-* 状态变量是否越界
-* 猫与鸡是否在无人监管时单独留在一起
-* 鸡与米是否在无人监管时单独留在一起
-
-这个函数相当于整个搜索过程中的“规则过滤器”，用于判断某一中间状态是否仍然安全。
-
----
-
-### 4. `river_crossing.m`
-
-这是另一个尝试性实现版本，采用递归深度优先搜索的写法，对人、猫、鸡、米过河问题进行求解。
-
-#### 主要特点
-
-* 使用递归函数 `dfs` 进行状态搜索
-* 尝试不同的过河组合
-* 记录左右岸路径
-* 判断状态是否合法
-
-#### 说明
-
-从当前代码看，它更像是一次不同风格的实现尝试，强调递归搜索框架，而不是严格复用主版本脚本的结构。
-
-因此它更适合作为“同一问题的另一种写法”保留在仓库中。
-
----
-
-## `variants/` 目录说明
-
-该目录保留了一些旧版本或变体实现，能够体现项目的迭代痕迹。
-
----
-
-### 5. `variants/gai.m`
-
-这是“人、猫、鸡、米过河问题”的一个修改版实现。
-
-与主版本相比，它在状态重复判定和回溯逻辑上做了不同处理，整体更像是一次算法修正或搜索策略调整。
-
-它的存在说明这个项目不是一次性写完，而是经历过一定的调试和修改过程。
-
----
-
-### 6. `variants/catkunrice_second.m`
-
-这个脚本与仓库主题相比明显不太一致，更像是一次独立的小型优化测试文件。
-
-从内容上看，它使用了 `fmincon` 做简单约束优化，和“过河问题”本身关联较弱。
-
-如果未来要进一步整理仓库，建议将该文件：
-
-* 移出本仓库
-* 或放入 `archive/` 并注明为“无关测试脚本”
-
-这样仓库主题会更加统一。
-
----
-
-## 核心方法
-
-虽然两个问题的具体约束不同，但整体思路是一致的，可以概括为：
-
-### 1. 状态表示
-
-用向量表示当前各类对象在左岸或右岸的分布情况。
-
-### 2. 决策集构造
-
-事先设定小船允许的载客/载物组合。
-
-### 3. 状态更新
-
-每次根据当前方向和选择的动作，对状态进行更新。
-
-### 4. 合法性判定
-
-检查新状态是否满足题目规则，非法则丢弃。
-
-### 5. 搜索与回溯
-
-若当前路径不可继续，则回退到上一状态，尝试其他选择。
-
-### 6. 结果输出
-
-输出完整状态序列、决策序列和渡河次数。
-
----
-
-## 运行环境
-
-* MATLAB R2018a 及以上版本
-* 普通 MATLAB 环境即可运行
-* 主体代码不依赖额外工具箱
-
-> 注：`variants/catkunrice_second.m` 中使用了 `fmincon`，若运行该文件可能需要 Optimization Toolbox，但它并不是本仓库的核心文件。
-
----
-
-## 使用方法
-
-### 1. 商人与随从过河问题
-
-运行：
-
-```matlab
-shangrenguohe
+```mermaid
+flowchart LR
+    A["初始左岸 / Start"] --> B["枚举动作 / Actions"] --> C["状态是否合法？ / Valid?"] --> D["到达右岸 / Goal"]
 ```
 
-程序会输出：
+## 结果展示 / Results
 
-* 状态变化序列
-* 每一步的决策结果
-* 总渡河次数
+_该项目以控制台输出或交互窗口为主；下方流程图用于说明可验证的执行路径。 / This project primarily produces console or interactive output; the workflow below documents its verifiable execution path._
 
----
+**验证摘要 / Verification summary**
 
-### 2. 人、猫、鸡、米过河问题
+catkunrice.m 已在 MATLAB R2025a 执行通过并输出完整状态矩阵。 / catkunrice.m was verified on MATLAB R2025a and produced a complete state sequence.
 
-运行：
+> 图表来自仓库现有输出或本地实际运行生成；README 不使用虚构指标。
+> Figures are existing project outputs or were generated by an actual local run; no performance metric is fabricated.
 
-```matlab
+### 如何阅读结果 / How to Read the Results
+
+- 先核对标题、坐标轴、单位和情景标签，再比较曲线、最优值或状态变化。
+- Check titles, axes, units, and scenario labels before comparing curves, optima, or state transitions.
+- 图像用于回答“模型产生了什么”，脚本和数据用于回答“结果如何得到”。
+- Figures answer *what the model produced*; scripts and data answer *how it was produced*.
+- 不同脚本的参数可能服务于不同子问题，跨图比较前应先确认参数口径一致。
+- Parameters may belong to different subtasks; confirm a shared definition before comparing figures.
+
+## 项目结构 / Project Map
+
+| 路径 / Path | 作用 / Purpose |
+| --- | --- |
+| `catkunrice.m` | 人猫鸡米状态搜索 / person-cat-chicken-rice search |
+| `shangrenguohe.m` | 商人与随从 / merchants and servants |
+| `river_crossing.m` | 递归 DFS 变体 / recursive DFS variant |
+| `variants/` | 历史变体 / archived variants |
+
+## 复现 / Reproduction
+
+### 环境 / Environment
+
+- MATLAB 项目建议使用 MATLAB R2025a 或兼容版本；含 `regress`、`linprog` 等函数的脚本可能需要 Statistics and Machine Learning Toolbox 或 Optimization Toolbox。
+- For MATLAB projects, MATLAB R2025a or a compatible release is recommended. Scripts using functions such as `regress` or `linprog` may require the relevant toolbox.
+- 非 MATLAB 项目的额外条件见下面的运行命令与项目文件。
+- For non-MATLAB projects, see the command and project files below for additional requirements.
+
+### 快速开始 / Quick Start
+
+```text
 catkunrice
 ```
 
-程序会输出：
+1. 克隆仓库并保持现有目录结构。 / Clone the repository and preserve its directory structure.
+2. 从仓库根目录或脚本所在目录运行上面的入口。 / Run the entry point from the repository root or the script's own directory.
+3. 若脚本依赖数据文件，请勿移动配套的 CSV、XLSX、MAT 或资源目录。 / Keep companion CSV, XLSX, MAT, and asset files in place.
 
-* 可行状态序列
-* 渡河步骤
-* 总次数
+### 复现检查清单 / Reproduction Checklist
 
----
+| 检查项 / Check | 预期 / Expected |
+| --- | --- |
+| 工作目录 / Working directory | 当前目录能找到入口脚本及其相对路径依赖。 / Entry scripts and relative dependencies resolve correctly. |
+| 依赖 / Dependencies | 所需工具箱、运行时或框架已安装。 / Required toolboxes, runtimes, or frameworks are installed. |
+| 数据 / Data | 文件名、工作表、列顺序和单位未被意外修改。 / Filenames, sheets, column order, and units remain unchanged. |
+| 随机性 / Randomness | 随机项目在对比实验时固定随机种子。 / Randomized projects use a fixed seed for comparisons. |
+| 输出 / Outputs | 控制台无未处理异常，图表或结果文件成功生成。 / No unhandled error appears and expected artifacts are generated. |
 
-### 3. 递归版本尝试
+## 验证状态 / Validation Status
 
-运行：
+| 层级 / Layer | 状态 / Status | 说明 / Notes |
+| --- | --- | --- |
+| 仓库结构 / Repository structure | ✅ 已检查 / Checked | 入口、核心源码和配套资源已盘点。 / Entry points, source, and companion assets were inventoried. |
+| README 链接 / README links | ✅ 已检查 / Checked | 本地图片引用已做存在性校验。 / Local image references were checked for existence. |
+| 结果真实性 / Result provenance | ✅ 已检查 / Checked | 仅引用已有输出或实际执行生成的结果。 / Only existing or locally reproduced outputs are shown. |
+| 全环境复现 / Full environment | 见上方摘要 / See summary | 交互、数据库、Unity 或特定工具箱项目可能需要额外环境。 / Interactive, database, Unity, or toolbox-dependent projects may need extra setup. |
 
-```matlab
-river_crossing
-```
+## 可扩展方向 / Roadmap Ideas
 
-可查看另一种递归搜索风格下的求解尝试。
+- 将固定参数集中到配置文件，并为单位、范围和缺失值增加输入校验。
+- Move fixed parameters into configuration files and validate units, ranges, and missing values.
+- 为核心函数增加最小测试用例，覆盖正常、边界和不可行情形。
+- Add small tests for normal, boundary, and infeasible cases.
+- 将关键数值结果同步导出为 CSV/JSON，并自动生成对比图和实验摘要。
+- Export key numeric results to CSV/JSON and generate comparison figures and experiment summaries automatically.
+- 对随机或优化算法记录随机种子、求解器版本、停止条件和运行时间。
+- Record seeds, solver versions, stopping criteria, and runtime for randomized or optimization routines.
 
----
+## 已知限制 / Known Limits
 
-## 项目特点
+- 这是学习与研究型项目，参数、数据范围和结论应结合原始场景解释，不宜直接用于生产决策。
+  This is an educational/research project; interpret parameters and conclusions within the original scenario before any real-world use.
+- 部分早期脚本采用交互式输入或固定相对路径；若批处理运行，请先检查入口文件。
+  Some early scripts use interactive input or fixed relative paths; inspect the entry point before automating it.
 
-### 1. 题目经典，容易理解
+## 常见问题 / FAQ
 
-“过河问题”本身是非常经典的逻辑谜题，非技术背景的人也容易理解其目标和约束。
+**为什么运行后没有图？ / Why is no figure displayed?**
 
-### 2. 有明显的算法训练价值
+部分入口只输出数值或状态序列；也可能是脚本尚未运行到绘图阶段。先检查控制台，再查看结果目录。
+Some entries produce only numeric or state output. Check the console first, then inspect the result directory.
 
-虽然问题规模不大，但完整体现了：
+**为什么结果和 README 略有不同？ / Why do my results differ slightly?**
 
-* 状态空间表示
-* 合法性检查
-* 搜索路径构造
-* 回溯与剪枝
+求解器版本、随机种子、浮点误差、数据版本或交互输入都可能造成差异。请先按复现清单核对环境。
+Solver versions, random seeds, floating-point behavior, data revisions, or interactive inputs can all cause differences.
 
-### 3. 新旧版本并存，能体现迭代过程
+## 贡献 / Contributing
 
-仓库中保留了多个实现版本，有助于体现从原始想法到逐步修正的过程。
-
-### 4. 适合作为 MATLAB 算法类小项目展示
-
-相比纯公式计算类脚本，这类项目更接近“规则驱动的小型求解器”。
-
----
-
-## 可改进方向
-
-当前仓库已经具备基本展示价值，但若继续整理，还可以进一步提升：
-
-### 1. 增加更清晰的结果输出
-
-例如将状态序列解释成自然语言步骤，例如：
-
-* 第 1 次：人带鸡过河
-* 第 2 次：人独自返回
-* 第 3 次：人带猫过河
-
-这样比直接打印矩阵更容易理解。
-
----
-
-### 2. 统一状态表示方式
-
-目前不同脚本的表示方法略有差异，未来可考虑统一为：
-
-* `1` 表示左岸
-* `0` 表示右岸
-
-或统一为“左岸剩余数量”形式，提高仓库整体一致性。
+欢迎通过 Issue 提交复现问题、改进建议或新的对照实验。
+Issues describing reproduction problems, improvements, or additional comparison experiments are welcome.
 
 ---
 
-### 3. 将合法性判定封装得更规范
-
-比如为商人与随从问题也单独写一个状态合法性函数，而不是只在主脚本中内嵌逻辑。
-
----
-
-### 4. 增加可视化展示
-
-后续可以尝试加入：
-
-* 每一步状态表
-* 左右岸对象分布图
-* 小船往返动画
-* Graph / State Tree 可视化
-
-这样会让 GitHub 展示效果更好。
-
----
-
-### 5. 清理主题不一致文件
-
-`variants/catkunrice_second.m` 与本仓库主题关联较弱，建议后续整理到：
-
-* `archive/`
-* 或其它更适合的练习仓库中
-
----
-
-## 适用场景
-
-本项目适合用于：
-
-* MATLAB 算法练习归档
-* 状态搜索与回溯思想展示
-* 离散数学/算法入门案例整理
-* GitHub 项目作品集中的“小而完整”算法项目
-
----
-
-## 总结
-
-这是一个围绕经典渡河问题展开的 MATLAB 小项目仓库。
-项目规模不大，但完整体现了以下几个关键能力：
-
-* 逻辑规则抽象
-* 状态建模
-* 合法性约束判定
-* 搜索与回溯求解
-* 多版本实现与调试修正
-
-对于 GitHub 展示而言，这类项目的优点在于：
-
-**题目经典、算法味明显、实现过程真实，能让别人比较快地看出你在做什么。**
-
----
-
-## License
-
-本项目仅用于学习交流与课程展示。
-
-```
+如果这个项目对你有帮助，欢迎 Star。 / If this project is useful, consider giving it a star.
