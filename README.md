@@ -2,7 +2,7 @@
 
 <p align="center"><strong>用状态空间搜索解决商人与随从、人猫鸡米等经典渡河约束问题，并输出可行状态序列。</strong><br>State-space solvers for classic river-crossing puzzles, including merchants-and-servants and the person-cat-chicken-rice problem.</p>
 
-<p align="center">![Tech](https://img.shields.io/badge/stack-MATLAB-2563eb) ![Docs](https://img.shields.io/badge/docs-中文%20%7C%20English-16a34a) ![Status](https://img.shields.io/badge/status-portfolio--ready-f59e0b)</p>
+<p align="center"><img alt="Tech stack" src="https://img.shields.io/badge/stack-MATLAB-2563eb"> <img alt="Documentation language" src="https://img.shields.io/badge/docs-中文%20%7C%20English-16a34a"> <img alt="Project status" src="https://img.shields.io/badge/status-portfolio--ready-f59e0b"></p>
 
 <p align="center"><a href="#中文说明">中文</a> · <a href="#english">English</a> · <a href="#结果展示--results">结果展示 / Results</a> · <a href="#复现--reproduction">复现 / Reproduction</a></p>
 
